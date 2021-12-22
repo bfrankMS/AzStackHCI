@@ -156,6 +156,12 @@ Enter-PSSession -VMName $vm
             Write-Output "starting download...."
             Invoke-WebRequest "$($uri.value)" -OutFile "$tmpDir\$($uri.key)"
     }
+
+    $RegistrationToken = "eyJhbGciOiJ...." # a valid hostpool registration token [Azure portal] -> Azure Virtual Desktop -> Host Pool -> %Your Hostpool%  -> Registration token
+    #unattended install
+    start-process -filepath msiexec -ArgumentList "/i ""$tmpDir\agent.msi"" /l*v ""$tmpDir\agent.msi.log"" REGISTRATIONTOKEN=$RegistrationToken /passive /qn /quiet /norestart " -Wait
+    start-process -filepath msiexec -ArgumentList "/i ""$tmpDir\bootloader.msi"" /l*v ""$tmpDir\bootloader.msi.log""  /quiet /qn /norestart /passive" -Wait
+
 #endregion
 
 # Log on to the VM
