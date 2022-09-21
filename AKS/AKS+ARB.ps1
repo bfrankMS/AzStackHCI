@@ -273,10 +273,10 @@ PS C:\Users\Administrator.CONTOSO> az arcappliance create hci --config-file "$AR
 Command group 'arcappliance create' is in preview and under development. Reference and support levels: https://aka.ms/CLI_refstatus
 {
   "distro": "AKSEdge",
-  "id": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourcegroups/rg-onpremvm/providers/microsoft.resourceconnector/appliances/bfazstackhci-arcbridge",
+  "id": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourcegroups/rg-onpremvm/providers/microsoft.resourceconnector/appliances/bfazstackhci-arcbridge",
   "identity": {
-    "principalId": "3749bc8c-d615-4f29-8326-cda9f9a8924a",
-    "tenantId": "bcc71c32-1770-4120-a5d7-469942947f62",
+    "principalId": "3749bc8c-d............924a",
+    "tenantId": "bcc71c32-1770.................",
     "type": "SystemAssigned"
   },
   "infrastructureConfig": {
@@ -285,15 +285,15 @@ Command group 'arcappliance create' is in preview and under development. Referen
   "location": "westeurope",
   "name": "bfazstackhci-arcbridge",
   "provisioningState": "Succeeded",
-  "publicKey": "MIICCgKCAgEAx3hwjWapTnl2sE95ASchjXRGAncZv+BIy+QAKN6p16Mvj6NHqrIOjdBcO7NJIqKBjFqhd3C+zcg4KDrkLk89Bgmm4xA/gx19W2Vi7CVsuXC050C6DNqqj5nBeXWJbIDD0/9u3VeDiFcrOTe7tBo95BDXZu09hfk1t6QzYkhbFdXtOMMJanBvZd62RoEjtWQF7aV3msLQ369k6eO4xwtsaPFN4vTUXp5TYCwVNoQ3H9YDU5xOdtqOun/cqe6PMk7JfyAwmxdG7t3tRWOiaZJcUfM/PKntnpsGTlh8s/17RoI9ZGK5yJHhscz/Pgwbm85P8JnKM+SMcDoEQKvslcSRygSsPGVv88mEPzOQN9A3Em+M7Vm+rhn/GtsLWzNBgqmzDGxjRtGwjVCzGdt+JG5gZ7DiQpvbbHudutdgIRmkhrGlPOm4Xe5PhqV5B5e60e6jfFGLLg2OAN837rgoAj91yifPq4kzXng/OmgzjJoXqED8POaqYlg0kDpIeC89TMfmfi2gDLnjx8idYKXhwDpycBteQ1HlXTnGk5U0fwdyg6LPfdI1akVG+NsYg9CvZAQ3DZfrHM0w96/2G+9XazLurWcS+iu0U+SeTlH+/8dHd8/4yq9wV6znNYFj0t8WAtghYbLDvEDPF/JrakBjv4MVf1Pf8BME0yq3lJyZc6hiRysCAwEAAQ==",
+  "publicKey": "MIICCgKCAgEAx3hwjWapTnl2sE95ASchjXRGAncZv+BIy+QAKN6p16Mvj6NHqrIOjdBc.......................5nBeXWJbIDD0/9u3VeDiFcrOTe7tBo95BDXZu09hfk1t6QzYkhbFdXtOMMJanBvZd62RoEjtWQF7aV3msLQ369k6eO4xwtsaPFN4vTUXp5TYCwVNoQ3H9YDU5xOdtqOun/cqe6PMk7JfyAwmxdG7t3tRWOiaZJcUfM/PKntnpsGTlh8s/17RoI9ZGK5yJHhscz/Pgwbm85P8JnKM+SMcDoEQKvslcSRygSsPGVv88mEPzOQN9A3Em+M7Vm+rhn/GtsLWzNBgqmzDGxjRtGwjVCzGdt+JG5gZ7DiQpvbbHudutdgIRmkhrGlPOm4Xe5PhqV5B5e60e6jfFGLLg2OAN837rgoAj91yifPq4kzXng/OmgzjJoXqED8POaqYlg0kDpIeC89TMfmfi2gDLnjx8idYKXhwDpycBteQ1HlXTnGk5U0fwdyg6LPfdI1akVG+NsYg9CvZAQ3DZfrHM0w96/2G+9XazLurWcS+iu0U+SeTlH+/8dHd8/4yq9wV6znNYFj0t8WAtghYbLDvEDPF/JrakBjv4MVf1Pf8BME0yq3lJyZc6hiRysCAwEAAQ==",
   "resourceGroup": "rg-onpremvm",
   "status": "Validating",
   "systemData": {
     "createdAt": "2022-05-05T11:46:48.624710+00:00",
-    "createdBy": "admin@M365x794893.onmicrosoft.com",
+    "createdBy": "admin@..........onmicrosoft.com",
     "createdByType": "User",
     "lastModifiedAt": "2022-05-05T11:46:48.624710+00:00",
-    "lastModifiedBy": "admin@M365x794893.onmicrosoft.com",
+    "lastModifiedBy": "admin@..........onmicrosoft.com",
     "lastModifiedByType": "User"
   },
   "tags": null,
@@ -311,10 +311,10 @@ Command group 'arcappliance create' is in preview and under development. Referen
 Command group 'arcappliance' is in preview and under development. Reference and support levels: https://aka.ms/CLI_refstatus
 {
   "distro": "AKSEdge",
-  "id": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourcegroups/rg-onpremvm/providers/microsoft.resourceconnector/appliances/bfazstackhci-arcbridge",
+  "id": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourcegroups/rg-onpremvm/providers/microsoft.resourceconnector/appliances/bfazstackhci-arcbridge",
   "identity": {
-    "principalId": "3749bc8c-d615-4f29-8326-cda9f9a8924a",
-    "tenantId": "bcc71c32-1770-4120-a5d7-469942947f62",
+    "principalId": "3749bc8c-d............924a",
+    "tenantId": "bcc71c32-1770.................",
     "type": "SystemAssigned"
   },
   "infrastructureConfig": {
@@ -323,7 +323,7 @@ Command group 'arcappliance' is in preview and under development. Reference and 
   "location": "westeurope",
   "name": "bfazstackhci-arcbridge",
   "provisioningState": "Succeeded",
-  "publicKey": "MIICCgKCAgEAx3hwjWapTnl2sE95ASchjXRGAncZv+BIy+QAKN6p16Mvj6NHqrIOjdBcO7NJIqKBjFqhd3C+zcg4KDrkLk89Bgmm4xA/gx19W2Vi7CVsuXC050C6DNqqj5nBeXWJbIDD0/9u3VeDiFcrOTe7tBo95BDXZu09hfk1t6QzYkhbFdXtOMMJanBvZd62RoEjtWQF7aV3msLQ369k6eO4xwtsaPFN4vTUXp5TYCwVNoQ3H9YDU5xOdtqOun/cqe6PMk7JfyAwmxdG7t3tRWOiaZJcUfM/PKntnpsGTlh8s/17RoI9ZGK5yJHhscz/Pgwbm85P8JnKM+SMcDoEQKvslcSRygSsPGVv88mEPzOQN9A3Em+M7Vm+rhn/GtsLWzNBgqmzDGxjRtGwjVCzGdt+JG5gZ7DiQpvbbHudutdgIRmkhrGlPOm4Xe5PhqV5B5e60e6jfFGLLg2OAN837rgoAj91yifPq4kzXng/OmgzjJoXqED8POaqYlg0kDpIeC89TMfmfi2gDLnjx8idYKXhwDpycBteQ1HlXTnGk5U0fwdyg6LPfdI1akVG+NsYg9CvZAQ3DZfrHM0w96/2G+9XazLurWcS+iu0U+SeTlH+/8dHd8/4yq9wV6znNYFj0t8WAtghYbLDvEDPF/JrakBjv4MVf1Pf8BME0yq3lJyZc6hiRysCAwEAAQ==",
+  "publicKey": "MIICCgKCAgEAx3hwjWapTnl2.........................VsuXC050C6DNqqj5nBeXWJbIDD0/9u3VeDiFcrOTe7tBo95BDXZu09hfk1t6QzYkhbFdXtOMMJanBvZd62RoEjtWQF7aV3msLQ369k6eO4xwtsaPFN4vTUXp5TYCwVNoQ3H9YDU5xOdtqOun/cqe6PMk7JfyAwmxdG7t3tRWOiaZJcUfM/PKntnpsGTlh8s/17RoI9ZGK5yJHhscz/Pgwbm85P8JnKM+SMcDoEQKvslcSRygSsPGVv88mEPzOQN9A3Em+M7Vm+rhn/GtsLWzNBgqmzDGxjRtGwjVCzGdt+JG5gZ7DiQpvbbHudutdgIRmkhrGlPOm4Xe5PhqV5B5e60e6jfFGLLg2OAN837rgoAj91yifPq4kzXng/OmgzjJoXqED8POaqYlg0kDpIeC89TMfmfi2gDLnjx8idYKXhwDpycBteQ1HlXTnGk5U0fwdyg6LPfdI1akVG+NsYg9CvZAQ3DZfrHM0w96/2G+9XazLurWcS+iu0U+SeTlH+/8dHd8/4yq9wV6znNYFj0t8WAtghYbLDvEDPF/JrakBjv4MVf1Pf8BME0yq3lJyZc6hiRysCAwEAAQ==",
   "resourceGroup": "rg-onpremvm",
   "status": "Running",
 
@@ -349,13 +349,13 @@ az k8s-extension create --cluster-type appliances --cluster-name $resource_name 
     "secret.loginString": ""
   },
   "configurationSettings": {
-    "HCIClusterID": "/Subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourceGroups/rg-AzStackHCI-R720/providers/Microsoft.AzureStackHCI/clusters/bfAzStackHCI",
+    "HCIClusterID": "/Subscriptions/fa6d5c70-.........66b9038c44eb/resourceGroups/rg-AzStackHCI-R720/providers/Microsoft.AzureStackHCI/clusters/bfAzStackHCI",
     "Microsoft.CustomLocation.ServiceAccount": "hci-vmoperator"
   },
   "customLocationSettings": null,
   "errorInfo": null,
   "extensionType": "microsoft.azstackhci.operator",
-  "id": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.ResourceConnector/appliances/bfAzStackHCI-arcbridge/providers/Microsoft.KubernetesConfiguration/extensions/hci-vmoperator",
+  "id": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.ResourceConnector/appliances/bfAzStackHCI-arcbridge/providers/Microsoft.KubernetesConfiguration/extensions/hci-vmoperator",
   "identity": null,
   "name": "hci-vmoperator",
   "packageUri": null,
@@ -394,12 +394,12 @@ az customlocation create --resource-group $resource_group --name $customloc_name
     "value": null
   },
   "clusterExtensionIds": [
-    "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.ResourceConnector/appliances/bfAzStackHCI-arcbridge/providers/Microsoft.KubernetesConfiguration/extensions/hci-vmoperator"
+    "/subscriptions/fa6d5c70-.........66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.ResourceConnector/appliances/bfAzStackHCI-arcbridge/providers/Microsoft.KubernetesConfiguration/extensions/hci-vmoperator"
   ],
   "displayName": "Regensburg",
-  "hostResourceId": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.ResourceConnector/appliances/bfAzStackHCI-arcbridge",
+  "hostResourceId": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.ResourceConnector/appliances/bfAzStackHCI-arcbridge",
   "hostType": "Kubernetes",
-  "id": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourcegroups/rg-onpremvm/providers/microsoft.extendedlocation/customlocations/regensburg",
+  "id": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourcegroups/rg-onpremvm/providers/microsoft.extendedlocation/customlocations/regensburg",
     "identity": null,
   "location": "westeurope",
   "name": "regensburg",
@@ -418,10 +418,10 @@ az azurestackhci virtualnetwork create --subscription $SubscriptionId --resource
 <#
 {
   "extendedLocation": {
-    "name": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.ExtendedLocation/customLocations/Regensburg",
+    "name": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.ExtendedLocation/customLocations/Regensburg",
     "type": "CustomLocation"
   },
-  "id": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.AzureStackHCI/virtualnetworks/ComputeSwitch",
+  "id": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourceGroups/rg-onpremvm/providers/Microsoft.AzureStackHCI/virtualnetworks/ComputeSwitch",
   "location": "westeurope",
   "name": "ComputeSwitch",
   "properties": {
@@ -464,10 +464,10 @@ az azurestackhci virtualnetwork create --subscription $SubscriptionId --resource
     <#
 {
   "extendedLocation": {
-    "name": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourceGroups/rg-nestedHCI/providers/Microsoft.ExtendedLocation/customLocations/myNestedHCILocation",
+    "name": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourceGroups/rg-nestedHCI/providers/Microsoft.ExtendedLocation/customLocations/myNestedHCILocation",
     "type": "CustomLocation"
   },
-  "id": "/subscriptions/fa6d5c70-1875-4d9f-b7f5-66b9038c44eb/resourceGroups/rg-nestedHCI/providers/Microsoft.AzureStackHCI/galleryimages/custom-win2k22-server",
+  "id": "/subscriptions/fa6d5c70-.........66b9038c44eb/resourceGroups/rg-nestedHCI/providers/Microsoft.AzureStackHCI/galleryimages/custom-win2k22-server",
   "location": "westeurope",
   "name": "custom-win2k22-server",
   "properties": {
