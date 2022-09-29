@@ -1,0 +1,129 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": {
+            "type": "string"
+        },
+        "customLocationName": {
+            "type": "string",
+            "metadata": {
+                "description": "This is the name of your custom location to deploy to."
+            }
+        },
+        "customLocationRG": {
+            "type": "string",
+            "metadata": {
+                "description": "This is the RG containing your custom location"
+            }
+        },
+        "processors": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "memoryGB": {
+            "type": "int",
+            "defaultValue": 4,
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "imageName": {
+            "type": "string",
+            "defaultValue": "win2022",
+            "metadata": {
+                "description": "Your preprovisioned gallery image"
+            }
+        },
+        "vnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Your preprovisioned network"
+            }
+        },
+        "osType": {
+            "type": "string",
+            "defaultValue": "Windows"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "customLocationId": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('customLocationRG'),'/providers/Microsoft.ExtendedLocation/customLocations/',parameters('customLocationName'))]",
+        "imageReference": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('customLocationRG'),'/providers/Microsoft.AzureStackHCI/galleryimages/',parameters('imageName'))]",
+        "subnetID": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('customLocationRG'),'/providers/microsoft.azurestackhci/virtualnetworks/',parameters('vnetName'))]",
+        "hardwareProfile": {
+            "processors": "[parameters('processors') ]",
+            "memoryGB": "[parameters('memoryGB')]"
+        },
+        "nicName": "[concat(parameters('vmName'),'-nic')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2021-07-01-preview",
+            "name": "[parameters('vmName')]",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.AzureStackHCI/virtualmachines",
+            "properties": {
+                "resourceName": "[parameters('vmName')]",
+                "hardwareProfile": "[variables('hardwareProfile')]",
+                "osProfile": {
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "osType": "[parameters('osType')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "name": "[variables('imageReference')]"
+                    },
+                    "dataDisks": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceid('Microsoft.AzureStackHCI/networkinterfaces',variables('nicName'))]"
+                        }
+                    ]
+                }
+            },
+            "extendedLocation": {
+                "type": "CustomLocation",
+                "name": "[variables('customLocationId')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.AzureStackHCI/networkinterfaces/',variables('nicName'))]"
+            ]
+        },
+        {
+            "apiVersion": "2021-07-01-preview",
+            "name": "[variables('nicName')]",
+            "type": "Microsoft.AzureStackHCI/networkinterfaces",
+            "location": "[resourceGroup().location]",
+            "extendedLocation": {
+                "type": "CustomLocation",
+                "name": "[variables('customLocationId')]"
+            },
+            "properties": {
+                "resourceName": "[variables('nicName')]",
+                "ipConfigurations": [
+                    {
+                        "name": "[variables('nicName')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('subnetID')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
