@@ -119,7 +119,7 @@ Get-AksHciKubernetesVersion
 
 $aksHciClusterName = "myk8s-wrkloadclus-$(Get-Random -Minimum 100 -Maximum 999)"
 
-New-AksHciCluster -Name $aksHciClusterName -nodeCount 1 -osType- linux -primaryNetworkPlugin calico 
+New-AksHciCluster -Name $aksHciClusterName -nodeCount 1 -osType linux -primaryNetworkPlugin calico 
 
 Get-akshcicredential -name $aksHciClusterName -Confirm:$false
 Get-ChildItem $env:userprofile\.kube
