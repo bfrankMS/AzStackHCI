@@ -129,7 +129,7 @@ enable-akshciarcconnection -name $aksHciClusterName
 
 #region Snippet 7: Will install Azure CLI on node (if not there already and set the path envrionment variable)
   start-bitstransfer https://aka.ms/installazurecliwindows ".\AzureCLI.msi" -Priority High -RetryInterval 60  -Verbose   #faster
-  Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /passive /lvx*:c:\temp\azcli.msi.log' 
+  Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /passive /lvx* c:\temp\azcli.msi.log' 
   #Remove-Item .\AzureCLI.msi
   #add path as environment var.
   $env:Path += ";C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin"
