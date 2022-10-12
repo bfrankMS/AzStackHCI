@@ -6,6 +6,10 @@
   run in snippets. 
   before you execute code - change names, paths (e.g. CSV location), and most important adopt to your IP address ranges 
 
+    References:
+    1) Installing AKS with PS: https://learn.microsoft.com/en-us/azure-stack/aks-hci/aks-hci-evaluation-guide-2b
+    2) Installing ARB with PS: https://learn.microsoft.com/en-us/azure-stack/hci/manage/deploy-arc-resource-bridge-using-command-line?tabs=for-static-ip-address
+
   #>
 
 #region Snippet 1: Installing required PS dependencies when needed
@@ -491,94 +495,3 @@ az azurestackhci virtualnetwork create --subscription $SubscriptionId --resource
 #>
 #endregion
 
-
-#region Create K8s service account and bearer token
-kubectl create serviceaccount admin-user
-kubectl create clusterrolebinding admin-user-binding --clusterrole cluster-admin --serviceaccount default:admin-user
-$SECRET_NAME = $(kubectl get serviceaccount admin-user -o jsonpath='{$.secrets[0].name}')
-
-$TOKEN = $(kubectl get secret ${SECRET_NAME} -o jsonpath='{$.data.token}' )
-
-$BearerToken = $([System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String(($TOKEN)))).Trim()
-#endregion
-
-#region uninstall
-$VerbosePreference = "Continue"
-Connect-AzAccount -UseDeviceAuthentication
-az login --use-device-code
-
-$csv_path = "c:\clusterstorage\CSV1"
-
-$subctx = Get-AzContext
-$resource_group = Get-Option "Get-AzResourceGroup" "ResourceGroupName"
-
-$vnetName = Get-Option "Get-vmswitch" "Name"
-az azurestackhci virtualnetwork delete --subscription $($subctx.Subscription.SubscriptionId) --resource-group $resource_group --name $vnetName --yes
-
-$galleryImageName = Get-Option "Get-azresource -resourcetype 'Microsoft.AzureStackHCI/galleryimages'" "Name"
-az azurestackhci galleryimage delete --subscription $($subctx.Subscription.SubscriptionId) --resource-group $resource_group --name $galleryImageName
-az customlocation delete --resource-group $resource_group --name $customloc_name --yes
-az k8s-extension delete --cluster-type appliances --cluster-name $resource_name --resource-group $resource_group --name hci-vmoperator --yes
-az arcappliance delete hci --config-file $ARBPath\hci-appliance.yaml --yes
-
-#remove arc bridge
-# need to have the ca and vms running.
-az arcappliance delete hci --config-file  "$ARBPath\hci-appliance.yaml" --yes
-
-az extension remove --name arcappliance
-az extension remove --name connectedk8s
-az extension remove --name k8s-configuration
-az extension remove --name k8s-extension
-az extension remove --name customlocation
-az extension remove --name azurestackhci
-
-Remove-ArcHciConfigFiles
-Uninstall-Module -Name "ArcHci" -Verbose
-
-
-#remove AKS
-Uninstall-akshci -Verbose -Debug
-Uninstall-Moc -Verbose  #will remove CAgent.
-Uninstall-Module -Name "AksHci" -Verbose
-Uninstall-Module -Name "Moc" -Verbose
-
-
-Install-Module -Name ArcHci -Force -Confirm:$false -SkipPublisherCheck -AcceptLicense
-
-#clear CSV directory on C:\ClusterStorage\ResourceBridge and others. 
-
-Install-Module -Name AzureAD -Repository PSGallery -Force 
-Install-Module -Name AksHci -Repository PSGallery -Force -AcceptLicense
-Install-Module -Name Moc -Repository PSGallery -Force -AcceptLicense
-Install-Module -Name ArcHci -Repository PSGallery -Force -Confirm:$false -SkipPublisherCheck -AcceptLicense
-
-Update-Module AzureAD
-Update-Module -Name AksHci 
-Update-Module -Name Moc
-Update-Module -Name ArcHci
-
-
-#region TS
-#https://docs.microsoft.com/en-us/azure-stack/aks-hci/connect-to-arc#verify-the-connected-cluster
-troubleshooting:
-kubectl -n azure-arc get deployments, pods, nodes
-kubectl describe pod clusterconnect-agent-974f675db-tkgpb  -n azure-arc
-
-
-https://docs.microsoft.com/en-us/azure-stack/aks-hci/kubernetes-concepts
-https://techcommunity.microsoft.com/t5/azure-stack-blog/how-do-aks-and-aks-on-azure-stack-hci-compare/ba-p/2987384
-https://docs.microsoft.com/en-us/azure-stack/aks-hci/known-issues-workload-clusters#if-a-cluster-is-shut-down-for-more-than-four-days-the-cluster-will-be-unreachable
-https://docs.microsoft.com/en-us/azure/azure-arc/kubernetes/troubleshooting
-#endregion
-
-#region updateting 
-Update-Module -Name AksHci -Force -AcceptLicense
-Get-AksHciversion #is not the same as Get-AksHciKubernetesVersion
-get-akshciupdates
-update-akshci
-#endregion
-
-
-
-#az account get-access-token
-#-> ist evtl. ein besserer weg an ein Bearer token zu kommen.
