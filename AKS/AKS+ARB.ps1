@@ -132,13 +132,13 @@ enable-akshciarcconnection -name $aksHciClusterName
 #endregion
 
 #region Snippet 7: Will install Azure CLI on node (if not there already and set the path envrionment variable)
-  start-bitstransfer https://aka.ms/installazurecliwindows ".\AzureCLI.msi" -Priority High -RetryInterval 60  -Verbose   #faster
+  start-bitstransfer https://aka.ms/installazurecliwindows ".\AzureCLI.msi" -Priority High -RetryInterval 60  -Verbose -SecurityFlags 0,0,0 -TransferPolicy Always #faster
   Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /passive /lvx* c:\temp\azcli.msi.log' 
   #Remove-Item .\AzureCLI.msi
   #add path as environment var.
   $env:Path += ";C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin"
-  [Environment]::SetEnvironmentVariable("Path", $env:Path)
-  #endregion
+  [Environment]::SetEnvironmentVariable("Path", $env:Path,"User")
+#endregion
 
 #region Snippet 8: Prepare Azure Resource Bridge installation
     Write-Host -ForegroundColor green "Prepare Azure Resource Bridge installation"
