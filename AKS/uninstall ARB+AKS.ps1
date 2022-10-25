@@ -1,4 +1,7 @@
 <# 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  Attention this will kill the VMs that have been created using ARBridge.
+!!!!!!!!!!!!!!!!!!!!
 
   This script should uninstall ARB and AKS
   
@@ -46,27 +49,25 @@ $ctx = az account show | ConvertFrom-Json
 
 
 #$VerbosePreference = "Continue"
-Connect-AzAccount -AccessToken $token.accessToken -AccountId $ctx.user.name
+Connect-AzAccount -AccessToken $token.accessToken -AccountId $ctx.user.name -GraphAccessToken $token.accessToken
 
 $sub = Get-Option "Get-AzSubscription" "Name" # alternatively you can choose "SubscriptionID" if you a
 Set-AzContext $sub
-
 
 $csv_path = "c:\clusterstorage\CSV1"
 $ARBPath = "$csv_path\ResourceBridge"
 $customloc_name = "HCIonprem"  #You may want to change this.
 
 $resource_name = ((Get-AzureStackHci).AzureResourceName) + "-arcbridge"
-$subctx = $sub
 
 "select the resource group that contains the ARB custom location (network, images)"
 $resource_group = Get-Option "Get-AzResourceGroup" "ResourceGroupName"
 
 $vnetName = Get-Option "Get-vmswitch" "Name"
-az azurestackhci virtualnetwork delete --subscription $($subctx.Subscription.SubscriptionId) --resource-group $resource_group --name $vnetName --yes
+az azurestackhci virtualnetwork delete --subscription $($ctx.id) --resource-group $resource_group --name $vnetName --yes
 
 $galleryImageName = Get-Option "Get-azresource -resourcetype 'Microsoft.AzureStackHCI/galleryimages'" "Name"
-az azurestackhci galleryimage delete --subscription $($subctx.Subscription.SubscriptionId) --resource-group $resource_group --name $galleryImageName
+az azurestackhci galleryimage delete --subscription $($ctx.id) --resource-group $resource_group --name $galleryImageName
 az customlocation delete --resource-group $resource_group --name $customloc_name --yes
 az k8s-extension delete --cluster-type appliances --cluster-name $resource_name --resource-group $resource_group --name hci-vmoperator --yes
 az arcappliance delete hci --config-file $ARBPath\hci-appliance.yaml --yes
