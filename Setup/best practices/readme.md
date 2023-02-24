@@ -11,11 +11,19 @@ The contain a lot HW specific but also generic settings and best practices. Wort
 ## Physical Switch:
 With AzStack HCI we have 3 traffic classes: **Management** (e.g. Cluster internal or to DC), **Compute** (VMs network talk), **Storage** (SMB direct (RDMA) | S2D traffic)
 - Make sure the switch you choose does work for connected traffic class! [Network switches for Azure Stack HCI](https://learn.microsoft.com/en-us/azure-stack/hci/concepts/physical-network-requirements?tabs=22H2%2C20-21H2reqs)
-- (Storage) RDMA switchports set higher MTU size
-- (Storage) Do PFC / DCB settings as per vendor documentation see e.g. [HPE], [Lenovo]  
+- (**Storage**) RDMA switchports set higher MTU size
+- (**Storage**) Do PFC / DCB settings as per vendor deployment guide see e.g. [HPE], [Lenovo]  
   
 [HPE]: https://www.hpe.com/psnow/doc/a50004375enw
 [Lenovo]: https://lenovopress.lenovo.com/lp0064-microsoft-storage-spaces-direct-s2d-deployment-guide
+
+## Hardware
+- You need a Host Bus Adapter (HBA) - not a RAID controller for your SSDs, HDDs(HDDs? Can do - but I would'nt). (nowadays seen controllers that can do both: RAID for OS & HBA for S2D) -> make sure your's is supported. -> ask vendor.
+- Never use consumer grade SSDs - performance will *s..k* (SATA is ok but it has to be DC ready i.e. **you require 'Power-Loss Protection'** ) - just [Don't do it]
+- Choose only [NICs that have the required certifications]([https://)](https://learn.microsoft.com/en-us/azure-stack/hci/concepts/host-network-requirements) [Windows Server Catalog]  
+
+[Don't do it]: https://techcommunity.microsoft.com/t5/storage-at-microsoft/don-t-do-it-consumer-grade-solid-state-drives-ssd-in-storage/ba-p/425914
+[Windows Server Catalog]: https://www.windowsservercatalog.com/
 
 ## BIOS:
 **Rule of thumb: follow your vendors 'S2D | HCI deployment guide'.**  
@@ -23,7 +31,7 @@ These probably include settings similar to:
 - Boot Mode - UEFI
 - Enable Virtualization Mode 
 - Enable SR-IOV
-- Due to EU regulations your system might be set to run power- and perf- capped: Check and change if required: e.g. System profile | CPU Mode to High or "Virtualization Max Performance" -> refer to your vendors documentation + [Perf tuning for low latency]
+- Due to EU regulations your system might be set to run power- and perf- capped: Check and change if required: e.g. System profile | CPU Mode to High or "Virtualization Max Performance" -> refer to your vendor's deployment guide + [Perf tuning for low latency]
 - Enable secure boot.
 - When having multiple physical NICs + multiple CPUs: You might want to use (fast) PCIe lanes that are served by different CPUs (to split load) 
   
@@ -36,12 +44,12 @@ These probably include settings similar to:
 - (**Storage**) Enable jumbo frames e.g.  
   `Set-NetAdapterAdvancedProperty -Name $StorageAdapter1Name -DisplayName "Jumbo Packet" -RegistryValue 9014`
 - (**Storage**) Use Qos Poliy and RDMA (required for [RoCE](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn583822(v=ws.11)) - recommended for [iWARP](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn583825(v=ws.11))  )
---->consult your vendors deployment guide.
+--->consult your vendor's deployment guide.
 
 - (applies to **Compute**, Management, Storage) Create the set switch depending on what the HW supports e.g.  
   `New-VMSwitch -EnableEmbeddedTeaming  $true [-EnableIov $true] [-EnablePacketDirect $true] [-Minimumbandwidthmode Weight]`  
   (Packet Direct https://learn.microsoft.com/en-us/windows-hardware/drivers/network/introduction-to-ndis-pdpi)  
-  ---> Consult vendor documentation.
+  ---> Consult vendor's deployment guide.
 
 - (**Storage**) When using switched storage networks and multiple switches: Avoid inter switch communication for storage traffic (i.e. avoid SW1:SMB1 <---interconnect---> SW2:SMB1) by mapping your virtual storage adapters to physical adapters plugged into the correct switch. E.g.  
   `Set-VMNetworkAdapterTeamMapping -VMNetworkAdapterName "$StorageAdapter1Name" -ManagementOS -PhysicalNetAdapterName "$physicalNic1Name" -Verbose`
@@ -54,6 +62,9 @@ To help ensure that the active memory dump is captured if a fatal system error o
 ### Storage 
 - Consider Reduced networking performance after you enable SMB Encryption or SMB Signing
 https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/reduced-performance-after-smb-encryption-signing?source=recommendations
+
+- Run a [VMFleet 2.0](https://techcommunity.microsoft.com/t5/azure-stack-blog/vmfleet-2-0-quick-start-guide/ba-p/2824778) test to do a performance baseline of your storage before putting workload on. 
+
 
 ## Cluster:
 - VMs should not talk on the management network.
