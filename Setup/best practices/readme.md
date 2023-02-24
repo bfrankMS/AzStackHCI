@@ -17,11 +17,14 @@ With AzStack HCI we have 3 traffic classes: **Management** (e.g. Cluster interna
 [HPE]: https://www.hpe.com/psnow/doc/a50004375enw
 [Lenovo]: https://lenovopress.lenovo.com/lp0064-microsoft-storage-spaces-direct-s2d-deployment-guide
 
-## Hardware
-- You need a Host Bus Adapter (HBA) - not a RAID controller for your SSDs, HDDs(HDDs? Can do - but I would'nt). (nowadays seen controllers that can do both: RAID for OS & HBA for S2D) -> make sure your's is supported. -> ask vendor.
-- Never use consumer grade SSDs - performance will *s..k* (SATA is ok but it has to be DC ready i.e. **you require 'Power-Loss Protection'** ) - just [Don't do it]
-- Choose only [NICs that have the required certifications]([https://)](https://learn.microsoft.com/en-us/azure-stack/hci/concepts/host-network-requirements) [Windows Server Catalog]  
+## Hardware 
+- **Rule of thumb**: **Buy an integrated system or at least validated nodes (it's tested, certified)** [Azure Stack HCI Solutions]  
+  (This does not mean that you could not build a working HCI - you may save some bucks on HW but you will invest (substancial) time(==money) learning ;-) )
+- You need a Host Bus Adapter (HBA) - not a RAID controller for your SSDs, HDDs (HDDs? Can do - but I wouldn't). (nowadays seen controllers that can do both: RAID for OS & HBA for S2D) -> make sure your's is supported. -> ask vendor and check [Storage Spaces Direct hardware requirements](https://learn.microsoft.com/en-us/windows-server/storage/storage-spaces/storage-spaces-direct-hardware-requirements)
+- Never use consumer grade SSDs - just [Don't do it] - performance will '*s..k*' (SATA is ok but it has to be DC ready i.e. you **require 'Power-Loss Protection'** ) 
+- Choose only [NICs that have the required certifications](https://learn.microsoft.com/en-us/azure-stack/hci/concepts/host-network-requirements) [Windows Server Catalog]  
 
+[Azure Stack HCI Solutions]: https://hcicatalog.azurewebsites.net/#/catalog
 [Don't do it]: https://techcommunity.microsoft.com/t5/storage-at-microsoft/don-t-do-it-consumer-grade-solid-state-drives-ssd-in-storage/ba-p/425914
 [Windows Server Catalog]: https://www.windowsservercatalog.com/
 
@@ -60,8 +63,7 @@ These probably include settings similar to:
 To help ensure that the active memory dump is captured if a fatal system error occurs, allocate sufficient space for the page file. E.g. Dell Technologies recommends allocating at least 50 GB plus the size of the CSV block cache.
 
 ### Storage 
-- Consider Reduced networking performance after you enable SMB Encryption or SMB Signing
-https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/reduced-performance-after-smb-encryption-signing?source=recommendations
+- Consider [Reduced networking performance after you enable SMB Encryption or SMB Signing](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/reduced-performance-after-smb-encryption-signing?source=recommendations)
 
 - Run a [VMFleet 2.0](https://techcommunity.microsoft.com/t5/azure-stack-blog/vmfleet-2-0-quick-start-guide/ba-p/2824778) test to do a performance baseline of your storage before putting workload on. 
 
