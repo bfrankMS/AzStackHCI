@@ -1,23 +1,24 @@
-download Test-RDMA.ps1
-from here
-https://github.com/microsoft/SDN/blob/master/Diagnostics/Test-Rdma.ps1
+# How To Do Test-RDMA
+ 
+>Note: Before putting workload to your cluster make sure RDMA has been properly configured. Sometimes settings seem correct but no RDMA traffic is observed. This test can help.
 
-#download diskspd binaries from here https://aka.ms/getdiskspd
+## Why should I do this? "Rule of Thumb..."
+...if you see a lot of packets in taskmanager on your SMB (RDMA enabled) adapters -> get suspicious - because when properly configured you should not see those. (You should observe them using RDMA counters in perfmon)
+
+## How to do the test
+1. Download [Test-Rdma.ps1](https://github.com/microsoft/SDN/blob/master/Diagnostics/Test-Rdma.ps1)
+2. Download [diskspd](https://aka.ms/getdiskspd) onto your node e.g. with:  
+```PowerShell
 mkdir c:\temp
 start-bitstransfer "https://aka.ms/getdiskspd" "c:\temp\diskspd.zip" -Priority High -RetryInterval 60 -Verbose
-
 Expand-Archive c:\temp\diskspd.zip c:\temp\diskspd
-
-
-(Code: https://github.com/Microsoft/diskspd)
-
-extract both to e.g. c:\temp on a node
-
-RDP into the node using a domain account with admin rights on all nodes.
-open powershell
-navigate to c:\temp
-
-execute get-netadapter to get all the Nics ifIndex
+# Code for diskspd is here https://github.com/Microsoft/diskspd
+```
+3. RDP into the node using a domain account with admin rights on all nodes.
+- open powershell  
+- navigate to c:\temp
+- Do a `Get-NetAdapter` to get all the Nics ifIndex e.g.  
+```
 PS C:\temp> get-netadapter
 
 Name                      InterfaceDescription                    ifIndex Status       MacAddress             LinkSpeed
@@ -32,18 +33,17 @@ pNIC01                    Mellanox ConnectX-3 Ethernet Adapter          7 Up    
 NIC3                      QLogic BCM57800 Gigabit Ethernet (...#2       5 Disconnected 90-B1-1C-29-59-F8          0 bps
 NIC2                      QLogic BCM57800 10 Gigabit Etherne...#2       4 Disconnected 90-B1-1C-29-59-F6          0 bps
 NIC1                      QLogic BCM57800 10 Gigabit Ethernet ...       2 Disconnected 90-B1-1C-29-59-F4          0 bps
-
-
--> take the 1st storage adpater you want to test -> e.g. SMB1 -> interface index = 10 
-
-launch test rdma like:
-PS C:\temp> .\Test-RDMA.ps1 -IfIndex 10 -IsRoCE $true -RemoteIpAddress 192.168.10.184 -PathToDiskspd "c:\temp\diskspd\amd64"
-
-
-Where remote IP address is the remote adapter's ip that can be reached via the local SMB1 adapter.
+```
+4. Take the 1st storage adpater you want to test -> e.g. SMB1 -> interface index = 10 
+- Launch test rdma like e.g.:  
+```PowerShell
+.\Test-RDMA.ps1 -IfIndex 10 -IsRoCE $true -RemoteIpAddress 192.168.10.184 -PathToDiskspd "c:\temp\diskspd\amd64"
+```
+Where remote IP address is the remote adapter's ip that can be reached via the local SMB1 adapter.  
 (you can ping first if you are uncertain)
-
-the output should be something like:
+  
+The output should be something like:
+```
 VERBOSE: Diskspd.exe found at c:\temp\DiskSpd\amd64\diskspd.exe
 VERBOSE: The adapter  vEthernet (SMB1)  is a  vNIC
 VERBOSE: Retrieving vSwitch bound to the virtual adapter
@@ -62,30 +62,7 @@ VERBOSE: 26459854 RDMA bytes sent per second
 VERBOSE: 718014566 RDMA bytes written per second
 VERBOSE: 26408155 RDMA bytes sent per second
 VERBOSE: 713305774 RDMA bytes written per second
-VERBOSE: 26548663 RDMA bytes sent per second
-VERBOSE: 710613717 RDMA bytes written per second
-VERBOSE: 26610172 RDMA bytes sent per second
-VERBOSE: 716276831 RDMA bytes written per second
-VERBOSE: 26595061 RDMA bytes sent per second
-VERBOSE: 715409168 RDMA bytes written per second
-VERBOSE: 26497949 RDMA bytes sent per second
-VERBOSE: 709792431 RDMA bytes written per second
-VERBOSE: 26602848 RDMA bytes sent per second
-VERBOSE: 709499883 RDMA bytes written per second
-VERBOSE: 26652654 RDMA bytes sent per second
-VERBOSE: 711654005 RDMA bytes written per second
-VERBOSE: 26482039 RDMA bytes sent per second
-VERBOSE: 712898335 RDMA bytes written per second
-VERBOSE: 26436049 RDMA bytes sent per second
-VERBOSE: 711197925 RDMA bytes written per second
-VERBOSE: 26309915 RDMA bytes sent per second
-VERBOSE: 710708343 RDMA bytes written per second
-VERBOSE: 26317606 RDMA bytes sent per second
-VERBOSE: 713879753 RDMA bytes written per second
-VERBOSE: 26535698 RDMA bytes sent per second
-VERBOSE: 714614551 RDMA bytes written per second
-VERBOSE: 26503000 RDMA bytes sent per second
-VERBOSE: 719363609 RDMA bytes written per second
+...
 VERBOSE: 26384721 RDMA bytes sent per second
 VERBOSE: 713992318 RDMA bytes written per second
 VERBOSE: 26796631 RDMA bytes sent per second
@@ -93,6 +70,12 @@ VERBOSE: 428838206 RDMA bytes written per second
 VERBOSE: 0 RDMA bytes sent per second
 VERBOSE: Enabling RDMA on adapters that are not part of this test. RDMA was disabled on them prior to sending RDMA traffic.
 SUCCESS: RDMA traffic test SUCCESSFUL: RDMA traffic was sent to 192.168.10.184
+```  
+Keyword is **SUCCESSFUL** ;-)
 
+**Whilst doing this you might want to look at the perfmon counters for RDMA of the node.**:  
+On your admin box: start **perfmon** -> Server: *your node*  -> add counter category 'RDMA Activity' -> choose e.g.  
+"RDMA Inbound Bytes/sec", "RDMA Outbound Bytes/sec",...  
+![perfmon RDMA](RDMAcounter.png)
 
-->whilst doing this you might look at the perfmon counters for RDMA of the Node.
+5. Repeat the tests for other RDMA adapters

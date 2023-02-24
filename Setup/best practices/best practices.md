@@ -1,4 +1,4 @@
-# AzStack HCI - Best Practices Checklist Draft 0.1
+# AzStack HCI - bfrank's Best Practices Checklist Draft 0.1
 
 > Note: This compilation is not complete and may contain errors or superfluous information. Feel free to contribute.
 
@@ -21,7 +21,7 @@ With AzStack HCI we have 3 traffic classes: **Management** (e.g. Cluster interna
 **Rule of thumb: follow your vendors 'S2D | HCI deployment guide'.**  
 These probably include settings similar to:  
 - Boot Mode - UEFI
-- Virtualization Mode - ein
+- Enable Virtualization Mode 
 - Enable SR-IOV
 - Due to EU regulations your system might be set to run power- and perf- capped: Check and change if required: e.g. System profile | CPU Mode to High or "Virtualization Max Performance" -> refer to your vendors documentation + [Perf tuning for low latency]
 - Enable secure boot.
@@ -33,17 +33,20 @@ These probably include settings similar to:
 ## OS:
 ### Network
 - Before configure host networking make sure the **firmware** & **drivers** for all NICs are update. Use your vendors supported way.
-- (Storage) Enable jumbo frames -> `Set-NetworkAdapterAdvancedProperty`
+- (**Storage**) Enable jumbo frames e.g.  
+  `Set-NetAdapterAdvancedProperty -Name $StorageAdapter1Name -DisplayName "Jumbo Packet" -RegistryValue 9014`
 - (**Storage**) Use Qos Poliy and RDMA (required for [RoCE](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn583822(v=ws.11)) - recommended for [iWARP](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn583825(v=ws.11))  )
 --->consult your vendors deployment guide.
 
-- (applies to **Compute**, Management, Storage) Create the set switch depending on what the HW supports e.g. `New-VMSwitch -EnableEmbeddedTeaming  $true [-EnableIov $true] [-EnablePacketDirect $true] [-Minimumbandwidthmode Weight]`  
+- (applies to **Compute**, Management, Storage) Create the set switch depending on what the HW supports e.g.  
+  `New-VMSwitch -EnableEmbeddedTeaming  $true [-EnableIov $true] [-EnablePacketDirect $true] [-Minimumbandwidthmode Weight]`  
   (Packet Direct https://learn.microsoft.com/en-us/windows-hardware/drivers/network/introduction-to-ndis-pdpi)  
   ---> Consult vendor documentation.
 
-- (**Storage**) When using switched storage networks and multiple switches: Avoid inter switch communication for storage traffic (i.e. avoid SW1:SMB1 <---interconnect---> SW2:SMB1) by mapping your virtual storage adapters to physical adapters plugged into the correct switch.   `set-vmnetworkadapterteammapping`
+- (**Storage**) When using switched storage networks and multiple switches: Avoid inter switch communication for storage traffic (i.e. avoid SW1:SMB1 <---interconnect---> SW2:SMB1) by mapping your virtual storage adapters to physical adapters plugged into the correct switch. E.g.  
+  `Set-VMNetworkAdapterTeamMapping -VMNetworkAdapterName "$StorageAdapter1Name" -ManagementOS -PhysicalNetAdapterName "$physicalNic1Name" -Verbose`
 
-- (**Storage**) Do a [Test-RDMA.ps1](https://github.com/microsoft/SDN/blob/master/Diagnostics/Test-Rdma.ps1) before going into production.
+- (**Storage**) Do a [Test-RDMA](./Test-RDMA/howto_test-rdma.md) + [Test-RDMA.ps1](https://github.com/microsoft/SDN/blob/master/Diagnostics/Test-Rdma.ps1) before going into production.
   
 ### Updating the page file settings
 To help ensure that the active memory dump is captured if a fatal system error occurs, allocate sufficient space for the page file. E.g. Dell Technologies recommends allocating at least 50 GB plus the size of the CSV block cache.
