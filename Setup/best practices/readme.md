@@ -1,6 +1,6 @@
-# AzStack HCI - bfrank's Best Practices Checklist Draft 0.1
+# AzStack HCI - bfrank's compilation of best practices found - Checklist Draft 0.1
 
-> Note: This compilation is not complete and may contain errors or superfluous information. Feel free to contribute.
+> Warning: This is a compilation of stuff found on the internet + personal habits. It is not complete and might contain errors or superfluous information. No warranties. Use for brainstorming and feel free to contribute.
 
 ## Example Vendor Deployment Guides
 The contain a lot HW specific but also generic settings and best practices. Worth checking - even if your HW is different.
@@ -88,13 +88,13 @@ Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\spaceport\Paramet
 - Have a look at [Performance tuning for low-latency packet processing](https://learn.microsoft.com/en-us/windows-server/networking/technologies/network-subsystem/net-sub-performance-tuning-nics?source=recommendations#bkmk_low) and the remainder of the article and consider tuning.
 - Check your RSS and VMQ settings and consider tuning of those: 
   - basically check that RSS is enabled, your Nics are NUMA node aligned (i.e. use the CPU that serving the NICs PCIe bus), use jumbo frames, VMMQ is enabled, and your vNics (especially host vnics e.g. vSMB1, vREPL,...) are affinitized to the right pNIC.  
-https://learn.microsoft.com/en-us/windows-hardware/drivers/network/introduction-to-receive-side-scaling
+https://learn.microsoft.com/en-us/windows-hardware/drivers/network/introduction-to-receive-side-scaling  
 https://www.darrylvanderpeijl.com/windows-server-2016-networking-optimizing-network-settings/ 
 https://www.broadcom.com/support/knowledgebase/1211161326328/rss-and-vmq-tuning-on-windows-servers
 https://learn.microsoft.com/en-us/windows-hardware/drivers/network/vmmq-send-and-receive-processing
 
 ### Storage Replica
-- personal tests have shown about 10% improvement on througput (read / write) impact on SR 
+- (**Experimental**) Personal tests have shown about 10% improvement on througput (read / write) impact on SR 
 [Performance tuning for SMB file servers](https://learn.microsoft.com/en-us/windows-server/administration/performance-tuning/role/file-server/smb-file-server)
 ```PowerShell
 Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Session Manager\Executive' -Name AdditionalCriticalWorkerThreads -Value 0x00000140 -Verbose
