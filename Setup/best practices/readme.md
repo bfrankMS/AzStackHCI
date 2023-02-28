@@ -22,7 +22,8 @@ With AzStack HCI we have 3 traffic classes: **Management** (e.g. Cluster interna
   (This does not mean that you could not build a working HCI - you may save some bucks on HW but you will invest (substancial) time(==money) learning ;-) )
 - You need a Host Bus Adapter (HBA) - not a RAID controller for your SSDs, HDDs (HDDs? Can do - but I wouldn't). (nowadays seen controllers that can do both: RAID for OS & HBA for S2D) -> make sure your's is supported. -> ask vendor and check [Storage Spaces Direct hardware requirements](https://learn.microsoft.com/en-us/windows-server/storage/storage-spaces/storage-spaces-direct-hardware-requirements)
 - Never use consumer grade SSDs - just [Don't do it] - performance will '*s..k*' (SATA is ok but it has to be DC ready i.e. you **require 'Power-Loss Protection'** )
-- How many disks you need to buy? (or *perf + resiliency impacts storage efficiency*) **Rule of thumb: Have your savvy vendor help you with right sizing** + Do the Plausibility check: [Storage Spaces Direct Calculator (preview)](https://aka.ms/s2dcalc) 
+- How many disks you need to buy? (or *perf + resiliency impacts storage efficiency*) **Rule of thumb: Have your savvy vendor help you with right sizing** + Do the Plausibility check: [Storage Spaces Direct Calculator (preview)](https://aka.ms/s2dcalc)  
+  - >Beware: That vendors use Terrabyte to express a device capacity - however many OSes show e.g. Tebibyte (1TB = 0.91TiB) - beware with what your are calculating - not to run short!
 - Choose only [NICs that have the required certifications](https://learn.microsoft.com/en-us/azure-stack/hci/concepts/host-network-requirements) [Windows Server Catalog]  
 
 [Azure Stack HCI Solutions]: https://hcicatalog.azurewebsites.net/#/catalog
