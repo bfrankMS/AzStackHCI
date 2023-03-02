@@ -56,7 +56,7 @@ $location = Get-AzLocation | Out-GridView -Title "Select your location (e.g. wes
     $newdisk.Name
     $DiskURI = $AccessSAS.AccessSAS
 
-    $folder = ShowFolderOpenDialog "Where should your disk goto?"
+    $folder = ShowFolderOpenDialog "Where should your disk go to?"
     $diskDestination = "$folder\$($newdisk.Name).vhd"
     Write-Host "Your disk will be placed into: $diskDestination" -ForegroundColor Green
     #"Start-BitsTransfer ""$DiskURI"" ""$diskDestination"" -Priority High -RetryInterval 60 -Verbose -TransferType Download"
