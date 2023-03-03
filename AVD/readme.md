@@ -6,14 +6,14 @@ See: [Set up Azure Virtual Desktop for Azure Stack HCI (preview) - manual](https
 0. You require: A registered HCI cluster, AD sync'ed with AAD, a valid Azure subscription
 1. Download the VDI image from the Azure marketplace you want to use.
 2. (optional) Optimize image e.g. convert to dynamically expanding vhdx to save disk space.
-3. (optional) Run windows update, customize image e.g. install frameworks | runtimes -> sysprep -> Checkpoint for later re-use.
+3. (optional - but likely) Create a VM for golden image creation: E.g. to run windows update, install your language packs, applications, frameworks, runtimes -> sysprep (!!!important!!! using: mode:vm) -> Checkpoint for later re-use.
    > Note: Only install what will 'survive' a sysprep (e.g. don't do ARC Agent nor AVD Hostpool registration yet) 
 4. (optional) FSLogix: Prepare a SMB file share (provide profile share with correct ACLs)
 5. (optional) FSLogix: Prepare a GPO for the AD OrgUnit (OU) the VDIs will be joined to.
 6. Deploy a empty AVD Hostpool in Azure.
 7. Create a Application Group for this Hostpool and allow an AAD User Group access to it.
 8. Create a Workspace containing the App Group created before.
-9. Deploy a VDI VM on HCI using the VDI image (from 1.)
+9. Deploy a VDI VM on HCI using the VDI image (from vhdx obtained in 1./2. or 3.)
 10. Deploy the AVD Agents into the VDI VM
 11. Deploy the Remote Desktop App for the User
 12. (When using Win 10|11 multisession) - [Enable Azure Benefits](https://learn.microsoft.com/en-us/azure-stack/hci/manage/azure-benefits)
@@ -116,7 +116,25 @@ Next is to download the Azure disk to one of your HCI nodes:
 #endregion
 ```
 
-# 10. Deploy the AVD Agents into the VDI VM
+## 3. (optional) Create a VM for golden image creation 
+You probably want update or use your apps in the VDIs. So you before creating desktops from the image you e.g. might want to ...:
+- ...do a windows update run first...
+- ...install your language packs...
+- ...install SW deployment agents, applications, frameworks, runtimes...
+...onto the image - before you finalize it with a sysprep.   
+
+Yes?! -> 
+1. Create a VM on HCI using the vhdx file you have just dowloaded|optimized.  
+2. Then perform the actions you want as described above.  
+3. (optional - recommended) Shutdown the VM in HCI - do a checkpoint - so that you can return to this state later. Boot up again.
+4. Then sysprep the vm to get a generalized version you can create VDI clones from.
+```
+c:\Windows\System32\Sysprep\sysprep.exe /oobe /generalize /shutdown /mode:vm
+```
+> Important to us the **mode:vm** switch (it'll tell the vm that the virtualization platform (HCI) has not changed)otherwise you might experience long boot times.
+5. Export the vm's .vhdx to your HCI cluster's image folder (some place on a CSV)
+
+## 10. Deploy the AVD Agents into the VDI VM
 Execute this PS script inside a VDI VM to make it part of a Hostpool. 
 >Note: Your VDI VM needs to be domain joined before + must have outbound internet access (it will download stuff and register). You also need to provide a valid %RegistrationToken%
 
