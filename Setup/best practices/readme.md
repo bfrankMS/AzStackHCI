@@ -101,6 +101,7 @@ Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\spaceport\Paramet
 
 ### Networking
 - Have a look at [Performance tuning for low-latency packet processing](https://learn.microsoft.com/en-us/windows-server/networking/technologies/network-subsystem/net-sub-performance-tuning-nics?source=recommendations#bkmk_low) and the remainder of the article and consider tuning.
+- (**Storage** network) Test if reducing | disabling interrupt moderation reduces latencies: [Interrupt Moderation (IM)](https://learn.microsoft.com/en-us/windows-server/networking/technologies/hpn/hpn-hardware-only-features#interrupt-moderation-im)
 - Check your RSS and VMQ settings and consider tuning of those: 
   - basically check that RSS is enabled, your Nics are NUMA node aligned (i.e. use the CPU that serving the NICs PCIe bus), use jumbo frames, VMMQ is enabled, and your vNics (especially host vnics e.g. vSMB1, vREPL,...) are affinitized to the right pNIC.  
 https://learn.microsoft.com/en-us/windows-hardware/drivers/network/introduction-to-receive-side-scaling  
