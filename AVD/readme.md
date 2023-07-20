@@ -17,6 +17,7 @@ See: [Set up Azure Virtual Desktop for Azure Stack HCI (preview) - manual](https
 10. Deploy the AVD Agents into the VDI VM
 11. Deploy the Remote Desktop App for the User
 12. (When using Win 10|11 multisession) - [Enable Azure Benefits](https://learn.microsoft.com/en-us/azure-stack/hci/manage/azure-benefits)
+13. (optional) when you are using proxies for the session hosts.
 
 ## 1. Download the VDI image from the Azure marketplace you want to use
 Do this on an admin box 
@@ -167,3 +168,11 @@ Execute this PS script inside a VDI VM to make it part of a Hostpool.
 ```
 After some minutes they should show up in the AVD hostpool:  
 ![VDI VMs (on HCI) in AVD Hostpool](vdivmsinhostpool.png)
+
+## 13. adding proxy...
+in order to make the RDagent and RD bootagent use proxies - you may need to run this in the session host:  
+```
+bitsadmin /util /setieproxy LOCALSYSTEM Manual_Proxy proxy1:8080 null
+bitsadmin /util /setieproxy NETWORKSERVICE Manual_Proxy proxy1:8080 null
+```
+Whereas proxy1:8080 is to be replaced with your proxy and port.
