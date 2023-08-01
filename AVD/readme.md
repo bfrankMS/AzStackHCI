@@ -92,11 +92,11 @@ Next is to download the Azure disk to one of your HCI nodes:
 
 ```PowerShell
 #region Convert to a dynamic vhdx!
-    $finalfolder = "C:\clusterstorage\CSV\VDIimages"        # pls enter an existing final destination to hold the AVD image.
+    $finalfolder = "C:\clusterstorage\CSV\Images"        # pls enter an existing final destination to hold the AVD image.
     $diskFinalDestination = "$finalfolder\Win11-multi-opt.vhdx"
-    $diskPath = "c:\ClusterStorage\CSV1\ArcBridgeImages\disk-win11-22h2-avd.vhd"
+    $sourceDiskPath = "c:\temp\disk-win11-22h2-avd.vhd"
 
-    Convert-VHD -Path "$diskDestination" -DestinationPath "$diskFinalDestination" -VHDType Dynamic
+    Convert-VHD -Path "$sourceDiskPath" -DestinationPath "$diskFinalDestination" -VHDType Dynamic
 
     try
     {
