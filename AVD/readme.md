@@ -89,6 +89,7 @@ Next is to download the Azure disk to one of your HCI nodes:
 #endregion
 ```
 ## 2. (optional) Optimize image e.g. convert to dynamically expanding vhdx to save disk space.
+**Do this on system with Hyper-V installed, e.g. on a cluster node.**  
 
 ```PowerShell
 #region Convert to a dynamic vhdx!
