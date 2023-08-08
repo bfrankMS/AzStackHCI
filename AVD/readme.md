@@ -1,5 +1,10 @@
 # How To Deploy AVD On AzStack HCI
 
+> Warning: Scripts are samples - no warranties - Use at your own risk!!!  
+  
+## Watch it done on YT: [Azure Stack HCI - Hybrid Series - Azure Virtual Desktop (AVD)](https://www.youtube.com/watch?v=pXI576Idx-c&list=PLDk1IPeq9PPeVwlvJZgo4n8Mw9Qj5gW0L)  
+
+
 ## Manually
 See: [Set up Azure Virtual Desktop for Azure Stack HCI (preview) - manual](https://learn.microsoft.com/en-us/azure/virtual-desktop/azure-stack-hci?tabs=manual-setup)
 
@@ -18,6 +23,7 @@ See: [Set up Azure Virtual Desktop for Azure Stack HCI (preview) - manual](https
 11. Deploy the Remote Desktop App for the User
 12. (When using Win 10|11 multisession) - [Enable Azure Benefits](https://learn.microsoft.com/en-us/azure-stack/hci/manage/azure-benefits)
 13. (optional) when you are using proxies for the session hosts.
+
 
 ## 1. Download the VDI image from the Azure marketplace you want to use
 Do this on an admin box 
@@ -135,6 +141,172 @@ c:\Windows\System32\Sysprep\sysprep.exe /oobe /generalize /shutdown /mode:vm
 ```
 > Important to us the **mode:vm** switch (it'll tell the vm that the virtualization platform (HCI) has not changed)otherwise you might experience long boot times.
 5. Export the vm's .vhdx to your HCI cluster's image folder (some place on a CSV)
+
+## 4. (optional) FSLogix: Prepare a SMB file share (provide profile share with correct ACLs)  
+Here is a script sample that would set the required NTFS permissions for a folder to be used for FSLogix profiles.  
+Make sure the domain, path and AD group name are correct for your system.
+
+```PowerShell
+$DomainName = "myavd"   #pls enter your domain name.
+
+#1st remove all exiting permissions.
+$acl = Get-Acl "\\Sofs\fslogix1"    # change to your path!!!
+
+$acl.Access | % { $acl.RemoveAccessRule($_) }
+$acl.SetAccessRuleProtection($true, $false)
+$acl | Set-Acl
+#add full control for 'the usual suspects'
+$users = @("$DomainName\Domain Admins", "System", "Administrators", "Creator Owner" )
+foreach ($user in $users) {
+    $new = $user, "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow"
+    $accessRule = new-object System.Security.AccessControl.FileSystemAccessRule $new
+    $acl.AddAccessRule($accessRule)
+    $acl | Set-Acl 
+}
+
+# make sure you have an 'AVD Users' group !!!
+# this will add read & write on parent folder ->required for FSLogix - no inheritence 
+$allowWVD = "AVD Users", "ReadData, AppendData, ExecuteFile, ReadAttributes, Synchronize", "None", "None", "Allow"
+$accessRule = new-object System.Security.AccessControl.FileSystemAccessRule $allowWVD
+$acl.AddAccessRule($accessRule)
+$acl | Set-Acl 
+```  
+
+## 5. (optional) FSLogix: Prepare a GPO for the AD OrgUnit (OU) the VDIs will be joined to.  
+This is a script sample to create a group policy object suitable for FSLogix profiles in AD. Make sure the variables (e.g. OU) and paths match yours.
+
+```PowerShell
+$OUSuffix = "OU=AVDHosts,OU=HCI"  #the part after the "...,DC=powerkurs,DC=local" so e.g. "OU=HostPool1,OU=AVD"
+
+
+#this will be our temp folder - need it for download / logging
+$tmpDir = "c:\temp\" 
+
+#create folder if it doesn't exist
+if (!(Test-Path $tmpDir)) { mkdir $tmpDir -force }
+
+#downloading FSLogix.
+Write-Output "downloading fslogix"
+
+$tempPath = "$tmpDir\FSLogix"
+$destinationPath = "$tmpDir\FSLogix.zip"
+if (!(Test-Path $destinationPath)) {
+    "downloading fslogix"
+    Invoke-WebRequest -Uri "https://aka.ms/fslogix_download" -OutFile $destinationPath -verbose
+    Expand-Archive $destinationPath -DestinationPath $tempPath -Force -verbose
+}
+
+$fqdn = (Get-WmiObject Win32_ComputerSystem).Domain
+$policyDestination = "Microsoft.PowerShell.Core\FileSystem::\\$fqdn\SYSVOL\$fqdn\policies\PolicyDefinitions\"
+
+mkdir $policyDestination -Force
+mkdir "$policyDestination\en-us" -Force
+Copy-Item "Microsoft.PowerShell.Core\FileSystem::$tempPath\*" -filter "*.admx" -Destination "Microsoft.PowerShell.Core\FileSystem::\\$fqdn\SYSVOL\$fqdn\policies\PolicyDefinitions" -Force -Verbose
+Copy-Item "Microsoft.PowerShell.Core\FileSystem::$tempPath\*" -filter "*.adml" -Destination "Microsoft.PowerShell.Core\FileSystem::\\$fqdn\SYSVOL\$fqdn\policies\PolicyDefinitions\en-us" -Force -Verbose
+
+
+$gpoName = "FSLogixDefExcl{0}" -f [datetime]::Now.ToString('dd-MM-yy_HHmmss') 
+New-GPO -Name $gpoName 
+$FSLogixRegKeys = @{
+    Enabled = 
+    @{
+        Type  = "DWord"
+        Value = 1           #set to 1 to enable.
+    }
+    VHDLocations = 
+    @{
+        Type  = "String"
+        Value = "\\SOFS\Profile1;\\SOFS\Profile2"
+    }
+    DeleteLocalProfileWhenVHDShouldApply =
+    @{
+        Type  = "DWord"
+        Value = 1
+    }
+    VolumeType = 
+    @{
+        Type  = "String"
+        Value = "VHDX"
+    }
+    SizeInMBs = 
+    @{
+        Type  = "DWord"
+        Value = 30000
+    }
+    IsDynamic = 
+    @{
+        Type  = "DWord"
+        Value = 1
+    }
+    PreventLoginWithFailure = 
+    @{
+        Type  = "DWord"
+        Value = 0
+    }
+    LockedRetryInterval = 
+    @{
+        Type  = "DWord"
+        Value = 10
+    }
+    LockedRetryCount = 
+    @{
+        Type  = "DWord"
+        Value = 5
+    }
+    FlipFlopProfileDirectoryName = 
+    @{
+        Type = "DWord"
+        Value = 1
+    }
+}
+
+foreach ($item in $FSLogixRegKeys.GetEnumerator()) {
+    "{0}:{1}:{2}" -f $item.Name, $item.Value.Type, $item.Value.Value
+    Set-GPRegistryValue -Name $gpoName -Key "HKEY_LOCAL_MACHINE\SOFTWARE\fslogix\profiles" -ValueName $($item.Name) -Value $($item.Value.Value) -Type $($item.Value.Type)
+}
+
+#enable path exclusions in windows defender for fslogix profiles
+Set-GPRegistryValue -Name $gpoName -Key "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows Defender\Exclusions" -ValueName "Exclusions_Paths" -Value 1 -Type DWord
+
+$excludeList = @"
+%ProgramFiles%\FSLogix\Apps\frxdrv.sys,
+%ProgramFiles%\FSLogix\Apps\frxdrvvt.sys,
+%ProgramFiles%\FSLogix\Apps\frxccd.sys,
+%TEMP%\*.VHD,
+%TEMP%\*.VHDX,
+%Windir%\TEMP\*.VHD,
+%Windir%\TEMP\*.VHDX,
+\\SOFS\Profile1\*\*.VHD,
+\\SOFS\Profile1\*\*.VHDX,
+\\SOFS\Profile2\*\*.VHD,
+\\SOFS\Profile2\*\*.VHDX
+"@
+foreach ($item in $($excludeList -split ',')) {
+    $item.Trim()
+    Set-GPRegistryValue -Name $gpoName -Key "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows Defender\Exclusions\Paths"  -ValueName "$($item.Trim())" -Value 0 -Type String 
+}
+
+Import-Module ActiveDirectory
+$DomainPath = $((Get-ADDomain).DistinguishedName) # e.g."DC=contoso,DC=azure"
+
+$OUPath = $($($OUSuffix + "," + $DomainPath).Split(',').trim() | where { $_ -ne "" }) -join ','
+Write-Output "creating FSLOGIX GPO to OU: $OUPath"
+
+$existingGPOs = (Get-GPInheritance -Target $OUPath).GpoLinks | Where-Object DisplayName -Like "FSLogixDefExcl*"
+
+if ($existingGPOs -ne $null) {
+    Write-Output "removing conflicting GPOs"
+    $existingGPOs | Remove-GPLink -Verbose
+}
+
+
+New-GPLink -Name $gpoName -Target $OUPath -LinkEnabled Yes -verbose
+
+#cleanup existing but unlinked fslogix GPOs
+$existingGPOs | % { [xml]$Report = Get-GPO -guid $_.GpoId | Get-GPOReport -ReportType XML; if (!($Report.GPO.LinksTo)) { Remove-GPO -Guid $_.GpoId -Verbose } }
+
+
+```  
 
 ## 10. Deploy the AVD Agents into the VDI VM
 Execute this PS script inside a VDI VM to make it part of a Hostpool. 
