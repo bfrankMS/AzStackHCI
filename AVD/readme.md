@@ -143,6 +143,9 @@ c:\Windows\System32\Sysprep\sysprep.exe /oobe /generalize /shutdown /mode:vm
 5. Export the vm's .vhdx to your HCI cluster's image folder (some place on a CSV)
 
 ## 4. (optional) FSLogix: Prepare a SMB file share (provide profile share with correct ACLs)  
+
+>Note: There is another YT series: [Azure Stack HCI - Workload Series - Scale-Out File Server (SOFS) For Highly Available - SMB Shares](https://www.youtube.com/watch?v=Rv7BcNUpy_U&list=PLDk1IPeq9PPeWG5m7yjh7ojwJMxalbXTa) that might be useful for hosting AVD profiles.
+
 Here is a script sample that would set the required NTFS permissions for a folder to be used for FSLogix profiles.  
 Make sure the domain, path and AD group name are correct for your system.
 
