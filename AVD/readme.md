@@ -358,4 +358,4 @@ Whereas proxy1:8080 is to be replaced with your proxy and port.
 When using the wizard in the Azure Portal notepad++ might produce an error:  
 `"message": "The resource you are looking for has been removed, had its name changed, or is temporarily unavailable."`  
 However with a slight name change and using an ARM template you can add NotepadPlusPlus to your AVD App Group.  
-[![Deploy To Azure](deploytoazure.png)](https://raw.githubusercontent.com/bfrankMS/AzStackHCI/main/AVD/NotePadPlusPlus.json)
+[![Deploy To Azure](deploytoazure.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FbfrankMS%2FAzStackHCI%2Fmain%2FAVD%2FNotePadPlusPlus.json)
