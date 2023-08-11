@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AppGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "Your AVD Application Group For Notepad++"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.DesktopVirtualization/applicationgroups/applications",
+            "apiVersion": "2022-10-14-preview",
+            "name": "[concat(parameters('AppGroupName'),'/NotepadPlusPlus')]",
+            "properties": {
+                "applicationType": "Inbuilt",
+                "friendlyName": "",
+                "description": "",
+                "filePath": "C:\\Program Files\\Notepad++\\notepad++.exe",
+                "iconPath": "C:\\Program Files\\Notepad++\\notepad++.exe",
+                "iconIndex": 0,
+                "commandLineSetting": "DoNotAllow",
+                "commandLineArguments": "",
+                "showInPortal": true
+            }
+        }
+    ]
+}

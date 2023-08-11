@@ -23,7 +23,7 @@ See: [Set up Azure Virtual Desktop for Azure Stack HCI (preview) - manual](https
 11. Deploy the Remote Desktop App for the User
 12. (When using Win 10|11 multisession) - [Enable Azure Benefits](https://learn.microsoft.com/en-us/azure-stack/hci/manage/azure-benefits)
 13. (optional) when you are using proxies for the session hosts.
-
+14. (optional) Publish NotepadPlusPlus in your AVD Application Group
 
 ## 1. Download the VDI image from the Azure marketplace you want to use
 Do this on an admin box 
@@ -352,3 +352,10 @@ bitsadmin /util /setieproxy LOCALSYSTEM Manual_Proxy proxy1:8080 null
 bitsadmin /util /setieproxy NETWORKSERVICE Manual_Proxy proxy1:8080 null
 ```
 Whereas proxy1:8080 is to be replaced with your proxy and port.
+
+
+## 14. Publish NotepadPlusPlus in your AVD Application Group  
+When using the wizard in the Azure Portal notepad++ might produce an error:  
+`"message": "The resource you are looking for has been removed, had its name changed, or is temporarily unavailable."`  
+However with a slight name change and using an ARM template you can add NotepadPlusPlus to your AVD App Group.  
+[![Deploy To Azure](deploytoazure.png)](https://raw.githubusercontent.com/bfrankMS/AzStackHCI/main/AVD/NotePadPlusPlus.json)
