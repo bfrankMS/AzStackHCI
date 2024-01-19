@@ -37,6 +37,7 @@ Get-NetIntentStatus | Format-Table IntentName, Host, ProvisioningStatus, Configu
 
 Get-NetIntentStatus -Globaloverrides
 
+$intents = Get-NetIntent 
 $intents | %{$_ | select-object -Property IntentName, AdapterAdvancedParametersOverride,RssConfigOverride,QosPolicyOverride,SwitchConfigOverride,IPOverride |convertto-json}
 
 "======Nics advanced========"
