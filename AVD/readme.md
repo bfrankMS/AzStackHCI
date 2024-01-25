@@ -20,8 +20,8 @@ See: [Set up Azure Virtual Desktop for Azure Stack HCI (preview) - manual](https
 8. Create a Workspace containing the App Group created before.
 9. Deploy a VDI VM on HCI using the VDI image (from vhdx obtained in 1./2. or 3.)
 10. Deploy the AVD Agents into the VDI VM
-11. Deploy the Remote Desktop App for the User
-12. (When using Win 10|11 multisession) - [Enable Azure Benefits](https://learn.microsoft.com/en-us/azure-stack/hci/manage/azure-benefits)
+11. Arc-enable your AVD session hosts. Why?!...
+12. Deploy the Remote Desktop App for the User
 13. (optional) when you are using proxies for the session hosts.
 14. (optional) Publish NotepadPlusPlus in your AVD Application Group
 
@@ -344,6 +344,49 @@ Execute this PS script inside a VDI VM to make it part of a Hostpool.
 ```
 After some minutes they should show up in the AVD hostpool:  
 ![VDI VMs (on HCI) in AVD Hostpool](vdivmsinhostpool.png)
+
+## 11. Arc-enable Your AVD Session Hosts
+Technically it is installing another agent (aka ***Azure connected machine agent***) into each desktop and connect it to Azure. Your desktop will show up in your Azure subscription.  
+![Arc enabled AVD Session Hosts](ArcEnabledVMs.png)  
+
+**1. Why Should You Do This?:**  
+Your AVDs may work without this but it is a best practice as:  
+- VM attestation / i.e. **activation** of your AVD session host OS (e.g. **Win 11 multisession**) **requires it**.
+  - see [Azure verification for VMs](https://learn.microsoft.com/en-us/azure-stack/hci/deploy/azure-verification?tabs=wac)
+- It is also **required for Health checks** and the starting point for Azure-backed monitoring, protection, configuration,... -operations
+  - see what you can do...[Supported cloud operations](https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview#supported-cloud-operations)
+- 
+**2. How Can You Do This?**  
+There are a couple of [onboarding methods](https://learn.microsoft.com/en-us/azure/azure-arc/servers/deployment-options#onboarding-methods) available.  
+In a **mass** (unattended,scripted) **deployment** you **probably create an Azure service principal** (an identity for apps with specific rights **in your Azure subscription** that works even if MFA is required) and **then** **run PowerShell inside each desktop** - e.g. like:    
+```PowerShell
+#### adjust the variables !!! ####
+$ServicePrincipalId = "8b42....7eee"
+$ServicePrincipalClientSecret ="GyG...KUI"
+$subScriptionId = "a2ba24....57e6f"
+$tenantId = "47f4......f65aab0"
+$resourceGroup = "rg-AVD-HPool1-WE"
+$location = "westeurope"
+$tags = "Datacenter=DC0815,City=SomeTown,StateOrDistrict=SomeDistrict,CountryOrRegion=SomeCountry,Purpose=AVD"
+
+
+try {
+    $env:AUTH_TYPE = "principal";
+    $env:CLOUD = "AzureCloud";
+    # downloading the azure connected machine agent
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072;
+    Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/azcmagent-windows" -TimeoutSec 30 -OutFile "$env:TEMP\install_windows_azcmagent.ps1";
+    & "$env:TEMP\install_windows_azcmagent.ps1";        #installing
+    if ($LASTEXITCODE -ne 0) { exit 1; }
+    & "$env:ProgramW6432\AzureConnectedMachineAgent\azcmagent.exe" connect --service-principal-id "$ServicePrincipalId" --service-principal-secret "$ServicePrincipalClientSecret" --resource-group "$resourceGroup" --tenant-id "$tenantId" --location "$location" --subscription-id "$subScriptionId" --cloud "$env:CLOUD" --tags $tags ; #connecting to azure
+}
+catch {
+    #report error in case something fails
+    $logBody = @{subscriptionId="$subScriptionId";resourceGroup="$resourceGroup";tenantId="$tenantId";location="$location";authType="$env:AUTH_TYPE";operation="onboarding";messageType=$_.FullyQualifiedErrorId;message="$_";};
+    Invoke-WebRequest -UseBasicParsing -Uri "https://gbl.his.arc.azure.com/log" -Method "PUT" -Body ($logBody | ConvertTo-Json) | out-null;
+    Write-Host  -ForegroundColor red $_.Exception;
+}
+```
 
 ## 13. adding proxy...
 in order to make the RDagent and RD bootagent use proxies - you may need to run this in the session host:  
