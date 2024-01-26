@@ -24,6 +24,7 @@ See: [Set up Azure Virtual Desktop for Azure Stack HCI (preview) - manual](https
 12. Deploy the Remote Desktop App for the User
 13. (optional) when you are using proxies for the session hosts.
 14. (optional) Publish NotepadPlusPlus in your AVD Application Group
+15. Enable [Azure verification for VMs](https://learn.microsoft.com/en-us/azure-stack/hci/deploy/azure-verification?tabs=wac) for **activation** of your AVD session host OS 
 
 ## 1. Download the VDI image from the Azure marketplace you want to use
 Do this on an admin box 
@@ -351,11 +352,11 @@ Technically it is installing another agent (aka ***Azure connected machine agent
 
 **1. Why Should You Do This?:**  
 Your AVDs may work without this but it is a best practice as:  
-- VM attestation / i.e. **activation** of your AVD session host OS (e.g. **Win 11 multisession**) **requires it**.
-  - see [Azure verification for VMs](https://learn.microsoft.com/en-us/azure-stack/hci/deploy/azure-verification?tabs=wac)
-- It is also **required for Health checks** and the starting point for Azure-backed monitoring, protection, configuration,... -operations
-  - see what you can do...[Supported cloud operations](https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview#supported-cloud-operations)
-- 
+- ...it is also **required for Health checks** 
+- ...it is the starting point for Azure-backed monitoring, protection, configuration,... -operations
+  - e.g. You can run VM extensions and attach additional Azure services like Azure Policy, defender for cloud etc. to the VMs.
+  - see what you can do...[Supported cloud operations](https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview#supported-cloud-operations)  
+
 **2. How Can You Do This?**  
 There are a couple of [onboarding methods](https://learn.microsoft.com/en-us/azure/azure-arc/servers/deployment-options#onboarding-methods) available.  
 In a **mass** (unattended,scripted) **deployment** you **probably create an Azure service principal** (an identity for apps with specific rights **in your Azure subscription** that works even if MFA is required) and **then** **run PowerShell inside each desktop** - e.g. like:    
