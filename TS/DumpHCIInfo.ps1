@@ -54,15 +54,13 @@ Get-NetAdapterStatistics -Name "*" | Format-List -Property "*"
 "------------------"
 
 "======Eventlogs========"
-Get-EventLog -list
-"------------------"
-Get-WinEvent -ListLog * | where {$_.RecordCount -gt 0}
-"------------------"
-Get-EventLog application -newest 20 -EntryType FailureAudit,Error,Warning
-Get-EventLog application -newest 10 -EntryType FailureAudit,Error,Warning | Select-Object -property @{name='TimeWritten'; expression={$_.TimeWritten.ToString("yyyy-MM-dd_HH:mm:ss")}},MachineName,EntryType,Source,InstanceID,Message | Sort-Object TimeWritten -Descending | convertto-json
-"------------------"
-Get-EventLog system -newest 20 -EntryType FailureAudit,Error,Warning
-Get-EventLog system -newest 10 -EntryType FailureAudit,Error,Warning | Select-Object -property @{name='TimeWritten'; expression={$_.TimeWritten.ToString("yyyy-MM-dd_HH:mm:ss")}},MachineName,EntryType,Source,InstanceID,Message | Sort-Object TimeWritten -Descending | convertto-json
+$HCILogs = @("system","application","AKSHCI","azshciarc","AzStackHciEnvironmentChecker","Microsoft-Windows-Health-Hci/Operational","Microsoft-AzureStack-HCI/Admin","Microsoft-AzureStack-HCI-AttestationService/Admin","Microsoft-Windows-Networking-NetworkAtc/Operational", "Microsoft-Windows-Networking-NetworkAtc/Admin")
+
+foreach ($log in $HCILogs)
+{
+    Get-WinEvent -LogName "$log" -MaxEvents 10
+    Get-WinEvent -LogName "$log" -MaxEvents 10  | Select-Object -property @{name='TimeCreated'; expression={$_.TimeCreated.ToString("yyyy-MM-dd_HH:mm:ss")}},MachineName,LevelDisplayName,Message | Sort-Object TimeWritten -Descending | convertto-json
+}
 
 "=============="
 Stop-Transcript
