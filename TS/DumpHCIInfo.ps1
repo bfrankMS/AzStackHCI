@@ -63,6 +63,11 @@ foreach ($log in $HCILogs)
 }
 
 "=============="
+
+"======ClusterLog========"
+Get-ClusterLog -TimeSpan 5 -Destination 'c:\temp\'
+"=============="
+
 Stop-Transcript
 
 

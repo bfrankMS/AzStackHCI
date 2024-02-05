@@ -88,7 +88,10 @@ $commands = @(
                 Get-WinEvent -LogName "$log" -MaxEvents 10
                 Get-WinEvent -LogName "$log" -MaxEvents 10  | Select-Object -Property @{name = 'TimeCreated'; expression = { $_.TimeCreated.ToString("yyyy-MM-dd_HH:mm:ss") } }, MachineName, LevelDisplayName, Message | Sort-Object TimeWritten -Descending | ConvertTo-Json
             }
-         }
+        }
+    },
+    @{
+        Name = "Get-ClusterLog "; Command = { Get-ClusterLog -TimeSpan 5 -Destination 'c:\temp\' }
     }
 )
 
