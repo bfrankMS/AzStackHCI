@@ -53,6 +53,13 @@ Get-NetAdapterStatistics -Name "*"
 Get-NetAdapterStatistics -Name "*" | Format-List -Property "*"
 "------------------"
 
+"======Get-ActionPlanInstances========"
+Get-ActionPlanInstances | ft ActionPlanName,status, InstanceID 
+
+Get-ActionPlanInstances  | where status -ne "Completed" | select -First 5
+
+"=============="
+
 "======Eventlogs========"
 $HCILogs = @("system","application","AKSHCI","azshciarc","AzStackHciEnvironmentChecker","Microsoft-Windows-Health-Hci/Operational","Microsoft-AzureStack-HCI/Admin","Microsoft-AzureStack-HCI-AttestationService/Admin","Microsoft-Windows-Networking-NetworkAtc/Operational", "Microsoft-Windows-Networking-NetworkAtc/Admin")
 
@@ -68,6 +75,8 @@ foreach ($log in $HCILogs)
 Get-ClusterLog -TimeSpan 5 -Destination 'c:\temp\'
 "=============="
 
+
+ 
 Stop-Transcript
 
 
