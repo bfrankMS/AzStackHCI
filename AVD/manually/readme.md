@@ -1,4 +1,4 @@
-# How To Deploy AVD On AzStack HCI
+# How To Deploy AVD On AzStack HCI (manually)
 
 > Warning: Scripts are samples - no warranties - Use at your own risk!!!  
 > Note: The caveat to the manual process is that your VMs are 'bybassing' and hence not known to the Azure Resource Bridge - hence cannot be managed by it - hence you will e.g. not be able to start and stop these VMs from the Azure Portal. That might be ok for learning, test and demo purposes but it is **not** the [intended](../intendedway/readme.md) usage.  
