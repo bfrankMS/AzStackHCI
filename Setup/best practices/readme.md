@@ -21,8 +21,8 @@ With AzStack HCI we have 3 traffic classes: **Management** (e.g. Cluster interna
 - **Rule of thumb**: **Buy an integrated system or at least validated nodes (it's tested, certified)** [Azure Stack HCI Solutions]  
   (This does not mean that you could not build a working HCI - you may save some bucks on HW but you will invest (substancial) time(==money) learning ;-) )
 - You need a Host Bus Adapter (HBA) - not a RAID controller for your SSDs, HDDs (HDDs? Can do - but I wouldn't). (nowadays seen controllers that can do both: RAID for OS & HBA for S2D) -> make sure your's is supported. -> ask vendor and check [Storage Spaces Direct hardware requirements](https://learn.microsoft.com/en-us/windows-server/storage/storage-spaces/storage-spaces-direct-hardware-requirements)
-- Never use consumer grade SSDs - just [Don't do it] - performance will '*s..k*' (SATA is ok but it has to be DC ready i.e. you **require 'Power-Loss Protection'** )
-- How many disks you need to buy? (or *perf + resiliency impacts storage efficiency*) **Rule of thumb: Have your savvy vendor help you with right sizing** + Do the Plausibility check: [Storage Spaces Direct Calculator (preview)](https://aka.ms/s2dcalc)  
+- Never use consumer grade SSDs - just [Don't do it] - performance will '*su.k*' (SATA is ok but it has to be DC ready i.e. you **require 'Power-Loss Protection'** )
+- How many disks you need to buy? (or *perf + resiliency impacts storage efficiency*) **Rule of thumb: Have your savvy vendor help you with right sizing** + Do the plausibility check: [Storage Spaces Direct Calculator (preview)](https://aka.ms/s2dcalc)  
   - >Beware: That vendors use Terrabyte to express a device capacity - however many OSes show e.g. Tebibyte (1TB = 0.91TiB) - beware with what your are calculating - not to run short!
 - Choose only [NICs that have the required certifications](https://learn.microsoft.com/en-us/azure-stack/hci/concepts/host-network-requirements) [Windows Server Catalog]  
 
@@ -44,40 +44,71 @@ These probably include settings similar to:
 
 
 ## OS:
+Do **not** update! This will be part of the installation.
 ### Network
+In 23H2 most of the networking settings will be done for you (some based on your input). We have 3 networks to care about:  
+1. **Management** - e.g. cluster communication, host to domain controller traffic, internet access, DNS,...
+2. **Compute** - for the VMs to talk to the outside world.
+3. **Storage** - for S2D i.e. the network traffic to provide storage redundancy (iwarp, RoCE, RoCEv2)
+  
+For these networks and the adapters there are some best practices to consider: 
 - Before configure host networking make sure the **firmware** & **drivers** for all NICs are update. Use your vendors supported way.
-- (**Storage**) Enable jumbo frames e.g.  
-  `Set-NetAdapterAdvancedProperty -Name $StorageAdapter1Name -DisplayName "Jumbo Packet" -RegistryValue 9014`
-- (**Storage**) Use Qos Poliy and RDMA (required for [RoCE](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn583822(v=ws.11)) - recommended for [iWARP](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn583825(v=ws.11))  )
---->consult your vendor's deployment guide.
+- (**Management, Compute, Storage**) Jumbo frames are the default. Make sure these are working with the switches that adapters are attached to.  
+- Configure just one network adapter to talk to the internet. With DNS, DG, single IP. 
+- Remove IPv6 from all network adapters when not configured.
+- Rename network adapters consistently accross all cluster nodes for their purpose: e.g.
+```PowerShell
+Rename-NetAdapter -InterfaceDescription 'Intel(R) Ethernet Network Adapter E810-XXV-2' -NewName "Storage1"
+```
+- (**Storage**) When switchless Make sure adapters are labeled and cross cabled correctly. You may consider looking at the nics MAC address to map interface description with physical port at the back of the server. e.g.  
+```cmd
+PS C:\Users\Administrator.MYAVD\Documents> get-netadapter
 
-- (applies to **Compute**, Management, Storage) Create the set switch depending on what the HW supports e.g.  
-  `New-VMSwitch -EnableEmbeddedTeaming  $true [-EnableIov $true] [-EnablePacketDirect $true] [-Minimumbandwidthmode Weight]`  
-  (Packet Direct https://learn.microsoft.com/en-us/windows-hardware/drivers/network/introduction-to-ndis-pdpi)  
-  ---> Consult vendor's deployment guide.
-
-- (**Storage**) When using switched storage networks and multiple switches: Avoid inter switch communication for storage traffic (i.e. avoid SW1:SMB1 <---interconnect---> SW2:SMB1) by mapping your virtual storage adapters to physical adapters plugged into the correct switch. E.g.  
-  `Set-VMNetworkAdapterTeamMapping -VMNetworkAdapterName "$StorageAdapter1Name" -ManagementOS -PhysicalNetAdapterName "$physicalNic1Name" -Verbose`
-
+Name                      InterfaceDescription                    ifIndex Status       MacAddress             LinkSpeed
+----                      --------------------                    ------- ------       ----------             ---------
+COMP2                     Intel(R) Ethernet Connection X722 fo...      15 Up           04-7B-CB-8A-45-FD        10 Gbps
+SMB1                      Intel(R) Ethernet Network Adapter E8...      14 Up           B4-96-91-BA-22-54        25 Gbps
+NIC1_HCIMX1               Intel(R) I350 Gigabit Network Connec...      13 Not Present  08-3A-88-FA-C5-CE          0 bps
+SMB2                      Intel(R) Ethernet Network Adapter ...#2      11 Up           B4-96-91-BA-22-55        25 Gbps
+COMP1                     Intel(R) Ethernet Connection X722 ...#2       9 Up           04-7B-CB-8A-45-FC        10 Gbps
+Ethernet                  IBM USB Remote NDIS Network Device            6 Not Present  06-7B-CB-8A-46-02          0 bps
+NIC2_HCIMX1               Intel(R) I350 Gigabit Network Conn...#2       4 Not Present  08-3A-88-FA-C5-CF          0 bps
+```
+- Disable DHCP, DNS registration, and IPv6 on all other adapters e.g.  
+```PowerShell
+$SMB2NetAdapterName = "Storage2"
+Set-NetIPInterface -InterfaceAlias $SMB2NetAdapterName -Dhcp Enabled -Verbose
+Start-Sleep 3
+Set-NetIPInterface -InterfaceAlias $SMB2NetAdapterName -Dhcp Disabled -Verbose
+Set-DnsClient -InterfaceAlias $SMB2NetAdapterName -RegisterThisConnectionsAddress $false
+Disable-NetAdapterBinding -InterfaceAlias $SMB2NetAdapterName -ComponentID ms_tcpip6      #disable IPv6  
+```
+- Rename adapters that should not be used with a unique value - e.g. the host's name and disable them:  
+```PowerShell
+$nic = get-netadapter -InterfaceDescription 'Intel(R) I350 Gigabit Network Connection'
+Rename-NetAdapter -InputObject $nic -NewName $("$($nic.Name)" + "_" + $env:COMPUTERNAME)
+Disable-NetAdapter -InputObject $nic -Verbose
+```
+```
+NIC1_HCIMX1               Intel(R) I350 Gigabit Network Connec...      13 Not Present  08-3A-88-FA-C5-CE          0 bps
+```
+ 
+- (**Storage**) When this network is switched be aware that Qos Policies and RDMA will be used (required for [RoCE](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn583822(v=ws.11)) - recommended for [iWARP](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn583825(v=ws.11))  )
+--->make sure switches are configured to support it! Consult your vendor's deployment guide.
 - (**Storage**) Do a [Test-RDMA](./Test-RDMA/howto_test-rdma.md) + [Test-RDMA.ps1](https://github.com/microsoft/SDN/blob/master/Diagnostics/Test-Rdma.ps1) before going into production.
   
-### Updating the page file settings
-To help ensure that the active memory dump is captured if a fatal system error occurs, allocate sufficient space for the page file. E.g. Dell Technologies recommends allocating at least 50 GB plus the size of the CSV block cache.
 
 ### Storage 
 - Consider [Reduced networking performance after you enable SMB Encryption or SMB Signing](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/reduced-performance-after-smb-encryption-signing?source=recommendations)
-
 - Run a [VMFleet 2.0](https://techcommunity.microsoft.com/t5/azure-stack-blog/vmfleet-2-0-quick-start-guide/ba-p/2824778) test to do a performance baseline of your storage before putting workload on. 
 
 
 ## Cluster:
 - VMs should not talk on the management network.
 - Have additional networks for cluster to cluster communication (i.e. Heartbeat. Not just one)
-- Configure cluster witness.
+- Configure cluster witness (will be done for you)
 - Create at least one CSV per node. ( CSVFS_ReFS as filesystem)
 - Make sure your CSVs uses the proper resiliency & performance option for your workload. [Plan volumes]
-
-- (optional) Consider using jumbo frames on the Live migration network.
 - Remove the host management network from live migration - or de-priotize the host management network for live migration - e.g.:
 ```powershell
 $clusterResourceType = Get-ClusterResourceType -Name 'Virtual Machine'
@@ -86,15 +117,6 @@ $otherNetworkID = (Get-ClusterNetwork).Where({$_.ID -ne $hostnetworkID}).ID
 $newMigrationOrder = ($otherNetworkID + $hostNetworkID) -join ';'
 Set-ClusterParameter -InputObject $clusterResourceType -Name MigrationNetworkOrder -Value $newMigrationOrder
 ```
-- (optional) [...enable CSV cache](https://techcommunity.microsoft.com/t5/failover-clustering/how-to-enable-csv-cache/ba-p/371854) for read-intensive workloads:
-`(Get-Cluster).BlockCacheSize = 512`
-- (optional) If you consider [Using Storage Spaces Direct in guest virtual machine clusters](https://learn.microsoft.com/en-us/windows-server/storage/storage-spaces/storage-spaces-direct-in-vm)  
-  To give greater resiliency to possible VHD / VHDX / VMDK storage latency in guest clusters, increase the Storage Spaces I/O timeout value:
-```PowerShell
-Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\spaceport\Parameters -Name HwTimeout -Value 0x00002710 -Verbose
-# 0x00002710 (HEX) = 10000 (DEX) => 10 secs
-# Restart-Computer -Force
-```  
 [Plan volumes]: https://learn.microsoft.com/en-us/azure-stack/hci/concepts/plan-volumes#with-four-or-more-servers
 
 ## Advanced & Experimental
@@ -109,15 +131,7 @@ https://www.darrylvanderpeijl.com/windows-server-2016-networking-optimizing-netw
 https://www.broadcom.com/support/knowledgebase/1211161326328/rss-and-vmq-tuning-on-windows-servers
 https://learn.microsoft.com/en-us/windows-hardware/drivers/network/vmmq-send-and-receive-processing
 
-### Storage Replica
-- (**Experimental**) Personal tests have shown about 10% improvement on througput (read / write) impact on SR 
-[Performance tuning for SMB file servers](https://learn.microsoft.com/en-us/windows-server/administration/performance-tuning/role/file-server/smb-file-server)
-```PowerShell
-Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Session Manager\Executive' -Name AdditionalCriticalWorkerThreads -Value 0x00000140 -Verbose
-Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Session Manager\Executive' -Name AdditionalDelayedWorkerThreads -Value 0x00000140 -Verbose
-```
-(reboot)
-(tried 0x40 before: did not show impact on my system.)
+
 
 
 
